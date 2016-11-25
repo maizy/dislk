@@ -64,7 +64,6 @@ def main(argv):
             open_slack(app_options)
             send_notification(app_options)
         else:
-            sys
             logger.info('Now you have 3 seconds to press Ctrl+C for exiting diSlack or else I\'ll launch Slack for you')
             try:
                 time.sleep(3)

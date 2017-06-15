@@ -1,10 +1,8 @@
-# python
-*.py[co]
-
 # IDE
 .idea/
 .project/
 *.iml
+.scala_dependencies
 
 # Mac OS X junk
 .AppleDouble
@@ -13,8 +11,19 @@ Icon?
 .Spotlight-V100
 .Trashes
 
-
 # Windows junk
 ehthumbs.db
 Thumbs.db
 Desktop.ini
+
+# scala
+*.class
+*.log
+
+# sbt
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/

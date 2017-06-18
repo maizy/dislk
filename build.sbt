@@ -2,6 +2,7 @@ name := "dislck"
 organization := "ru.maizy"
 
 val scalaV = "2.12.2"
+val maintainerS = "Nikita Kovaliov <nikita@maizy.ru>"
 val dislckVersion = "0.0.1-alpha"
 
 val scalacOpts = Seq(
@@ -25,12 +26,13 @@ val scalacOpts = Seq(
 )
 
 scalaVersion := scalaV
+maintainer := maintainerS
 
 lazy val commonSettings = Seq(
   organization := "ru.maizy",
   version := dislckVersion,
   scalaVersion := scalaV,
-  maintainer := "Nikita Kovaliov <nikita@maizy.ru>",
+  maintainer := maintainerS,
   scalacOptions ++= scalacOpts,
   scalacOptions in (Compile, console) := scalacOpts
 )

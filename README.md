@@ -6,8 +6,6 @@ _TBA_
 ## Requirements
 
 * macOS 10.12
-* [JRE 1.8](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html)
-
 
 ## Build
 
@@ -18,7 +16,8 @@ sbt dislckApp/jdkPackager:packageBin
 
 ```
 
-App will be in `dislck-app/target/universal/jdkpackager/bundles/dislck.app`
+App will be in `dislck-app/target/universal/jdkpackager/bundles/dislck.app`.
+Finall app contains embedded JRE.
 
 
 ## Development

@@ -55,8 +55,9 @@ lazy val cliDependencies = Seq(
 
 lazy val jsonDependencies = Seq(
   libraryDependencies ++= Seq(
-    "io.spray" %%  "spray-json" % "1.3.3"
-  )
+    "com.github.fomkin" %% "pushka-json" % "0.8.0"
+  ),
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 )
 
 lazy val slackClient = project
@@ -67,8 +68,8 @@ lazy val macosService = project
   .in(file("macos-service"))
   .settings(commonSettings, commonDependencies)
 
-lazy val dislck = project
-  .in(file("dislck"))
+lazy val dislckApp = project
+  .in(file("dislck-app"))
   .settings(commonSettings, commonDependencies, cliDependencies)
   .dependsOn(slackClient)
   .dependsOn(macosService)

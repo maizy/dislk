@@ -11,7 +11,7 @@ val scalacOpts = Seq(
   "-unchecked",
   "-feature",
   "-explaintypes",
-  "-Xfatal-warnings",
+  //"-Xfatal-warnings",
   "-Xlint:_",
   "-Ywarn-dead-code",
   "-Ywarn-inaccessible",
@@ -66,7 +66,11 @@ lazy val slackClient = project
 
 lazy val macosService = project
   .in(file("macos-service"))
-  .settings(commonSettings, commonDependencies)
+  .settings(commonSettings, commonDependencies, Seq(
+    libraryDependencies ++= Seq(
+      "net.java.dev.jna" % "jna" % "4.4.0"
+    )
+  ))
 
 lazy val dislckApp = project
   .in(file("dislck-app"))

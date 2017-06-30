@@ -1,9 +1,9 @@
-name := "dislck"
+name := "dislk"
 organization := "ru.maizy"
 
 val scalaV = "2.12.2"
 val maintainerS = "Nikita Kovaliov <nikita@maizy.ru>"
-val dislckVersion = "0.0.1-alpha"
+val dislkVersion = "0.0.1-alpha"
 
 val scalacOpts = Seq(
   "-target:jvm-1.8",
@@ -30,7 +30,7 @@ maintainer := maintainerS
 
 lazy val commonSettings = Seq(
   organization := "ru.maizy",
-  version := dislckVersion,
+  version := dislkVersion,
   scalaVersion := scalaV,
   maintainer := maintainerS,
   scalacOptions ++= scalacOpts,
@@ -74,8 +74,8 @@ lazy val macosService = project
     )
   ))
 
-lazy val dislckApp = project
-  .in(file("dislck-app"))
-  .settings(commonSettings, commonDependencies, cliDependencies)
+lazy val dislkApp = project
+  .in(file("dislk-app"))
+  .settings(commonSettings, commonDependencies, cliDependencies, jsonDependencies)
   .dependsOn(slackClient)
   .dependsOn(macosService)

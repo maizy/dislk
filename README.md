@@ -1,4 +1,4 @@
-# diSlck
+# diSlk
 
 _TBA_
 
@@ -12,19 +12,33 @@ _TBA_
 Required Oracle JDK 1.8.x
 
 ```
-sbt dislckApp/jdkPackager:packageBin
+sbt dislkApp/jdkPackager:packageBin
 
 ```
 
-App will be in `dislck-app/target/universal/jdkpackager/bundles/dislck.app`.
+App will be in `dislk-app/target/universal/jdkpackager/bundles/dislk.app`.
 Finall app contains embedded JRE.
 
 
+## Setup
+
+**Temp**, will be configured in UI in the next versions.
+
+Add ~/.config/dislk.json:
+
+```
+{
+    "personal_token": "abcd-1234-5678-901234-1234abcdef"
+}
+```
+
+Token can be requested [here](https://api.slack.com/custom-integrations/legacy-tokens).
+
 ## Development
 
-In Intelij IDEA you should manually add 
+In Intelij IDEA you should manually add
 [macro paradise compiler plugin](https://search.maven.org/remotecontent?filepath=org/scalamacros/paradise_2.12.2/2.1.0/paradise_2.12.2-2.1.0.jar)
-to `Prefereces` -> `Scala Compiler` -> `slackClient` -> `Compiler plugins`.
+to `Prefereces` -> `Scala Compiler` -> `slackClient`/`dislckApp` -> `Compiler plugins`.
 
 
 ## License
@@ -33,4 +47,4 @@ to `Prefereces` -> `Scala Compiler` -> `slackClient` -> `Compiler plugins`.
 
 ## etc
 
-[python prototype](https://github.com/maizy/dislck/tree/python-prototype)
+[python prototype](https://github.com/maizy/dislk/tree/python-prototype)

@@ -19,7 +19,7 @@ object HttpUtils {
   final val HTTP_OK = 200
 }
 
-trait HttpUtils {
+trait HttpUtils extends ParseUtils {
   import HttpUtils._
 
   protected val httpClient: Http = Http.default
@@ -57,17 +57,38 @@ trait HttpUtils {
     })
   }
 
-  protected def checkResponse(
-      rawResponse: RawHttpResponse,
-      expectedCodes: Seq[Int] = Seq(HTTP_OK)): Either[ClientError, RawHttpResponse] =
-  {
-    if (!expectedCodes.contains(rawResponse.status)) {
-      Left(ClientError(s"Bad response status ${rawResponse.status}, expected ${expectedCodes mkString "," }"))
-    } else {
-      Try(ErrorDto.parse(rawResponse.body)) match {
-        case Success(error) if !error.ok => Left(ClientError(s"Slack responses with error '${error.errorCode}'"))
-        case _ => Right(rawResponse)
+  protected implicit class Check(f: Future[RawHttpResponse])(implicit ex: ExecutionContext) {
+    def checkResponse(expectedCodes: Seq[Int] = Seq(HTTP_OK)): Future[Either[ClientError, RawHttpResponse]] = {
+      f.map { rawResponse =>
+        if (!expectedCodes.contains(rawResponse.status)) {
+          Left(ClientError(s"Bad response status ${rawResponse.status}, expected ${expectedCodes mkString ","}"))
+        } else {
+          Try(ErrorDto.parseJson(rawResponse.body)) match {
+            case Success(error) if !error.ok => Left(ClientError(s"Slack responses with error '${error.errorCode}'"))
+            case _ => Right(rawResponse)
+          }
+        }
+      }
+    }
+
+    def checkResponseIsSuccessful(expectedCodes: Seq[Int] = Seq(HTTP_OK)): Future[Unit] = {
+      f.checkResponse(expectedCodes) map {
+        case Left(error) => throw error
+        case Right(_) => ()
       }
     }
   }
+
+  protected implicit class CheckAndParse(f: Future[RawHttpResponse])(implicit ex: ExecutionContext) {
+    def checkAndParse[T](parse: RawHttpResponse => T, expectedCodes: Seq[Int] = Seq(HTTP_OK)): Future[T] = {
+      f.checkResponse(expectedCodes).map {
+        case Left(error) => throw error
+        case Right(response) =>
+          wrapParseException{
+            parse(response)
+          }
+      }
+    }
+  }
+
 }

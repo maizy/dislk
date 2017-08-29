@@ -49,6 +49,7 @@ class SnoozeWatcher(val queue: BlockingQueue[Event], slackClient: Client)(implic
 
       reschedule()
     }
+    ()
   }
 
   private def check()(implicit ec: ExecutionContext): Future[Seq[Event]] = {

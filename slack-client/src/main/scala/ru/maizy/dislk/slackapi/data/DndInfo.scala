@@ -29,8 +29,8 @@ class Timestamp(val timestamp: Int) extends AnyVal
     s"end=${snoozeEndtime.map(_.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)).getOrElse("-")}})"
 }
 
-object DndInfo extends JsonSupport[DndInfo] {
-  override def parse(value: String): DndInfo = read[DndInfo](value)
+object DndInfo extends JsonReadSupport[DndInfo] {
+  override def parseJson(value: String): DndInfo = read[DndInfo](value)
 }
 
 

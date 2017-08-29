@@ -5,10 +5,7 @@ package ru.maizy.dislk.app
  * See LICENSE.txt for details.
  */
 
-import java.util.concurrent.LinkedBlockingQueue
 import scala.concurrent.ExecutionContext
-import ru.maizy.dislk.app.watcher.{ Event, SnoozeWatcher }
-import ru.maizy.dislk.macos.notification.MacOsNotification
 import ru.maizy.dislk.slackapi
 import ru.maizy.dislk.slackapi.Client
 

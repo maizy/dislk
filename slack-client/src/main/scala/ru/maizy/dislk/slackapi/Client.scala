@@ -6,25 +6,26 @@ package ru.maizy.dislk.slackapi
  */
 
 import scala.concurrent.{ ExecutionContext, Future }
-import ru.maizy.dislk.slackapi.data.DndInfo
+import ru.maizy.dislk.slackapi.data.{ DndInfo, Profile }
 
 case class ClientError(message: String, cause: Option[Throwable] = None) extends Exception(message, cause.orNull)
 
 class Client private (val config: Config)(implicit ec: ExecutionContext)
   extends HttpUtils
-  with ParseUtils
 {
 
   override protected def context: ExecutionContext = ec
 
   def dndInfo(): Future[DndInfo] = {
-    requestWithToken("dnd.info").map { checkResponse(_) match {
-      case Left(error) => throw error
-      case Right(response) =>
-        wrapParseException{
-          DndInfo.parse(response.body)
-        }
-    }}
+    requestWithToken("dnd.info").checkAndParse { response =>
+      DndInfo.parseJson(response.body)
+    }
+  }
+
+  def setStatus(text: String, emoji: String): Future[Unit] = {
+    val profileParam = Profile(text, emoji).toJson
+    requestWithToken("users.profile.set", Seq("profile" -> profileParam), httpMethod = "POST")
+      .checkResponseIsSuccessful()
   }
 }
 

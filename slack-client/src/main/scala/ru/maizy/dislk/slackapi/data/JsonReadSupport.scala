@@ -5,7 +5,7 @@ package ru.maizy.dislk.slackapi.data
  * See LICENSE.txt for details.
  */
 
-trait JsonSupport[T] {
-  def parse(value: String): T
-  def parse(raw: Array[Byte]): T = parse(new String(raw))
+trait JsonReadSupport[T] {
+  def parseJson(value: String): T
+  def parseJson(raw: Array[Byte]): T = parseJson(new String(raw))
 }

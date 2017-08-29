@@ -11,8 +11,8 @@ import pushka.json._
 
 @pushka case class ErrorDto(@key("error") errorCode: String, ok: Boolean)
 
-object ErrorDto extends JsonSupport[ErrorDto] {
-  def parse(value: String): ErrorDto = read[ErrorDto](value)
+object ErrorDto extends JsonReadSupport[ErrorDto] {
+  def parseJson(value: String): ErrorDto = read[ErrorDto](value)
 }
 
 // example json

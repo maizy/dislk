@@ -5,7 +5,10 @@ package ru.maizy.dislk.app
  * See LICENSE.txt for details.
  */
 
+import java.util.concurrent.LinkedBlockingQueue
 import scala.concurrent.ExecutionContext
+import ru.maizy.dislk.app.watcher.{ Event, SnoozeWatcher }
+import ru.maizy.dislk.macos.notification.MacOsNotification
 import ru.maizy.dislk.slackapi
 import ru.maizy.dislk.slackapi.Client
 
@@ -22,20 +25,20 @@ object AppLauncher extends App {
       Console.err.println(error)
       System.exit(1)
 
-    case Right(AppConfig(Some(personalToken))) =>
+    case Right(appConfig) if appConfig.personalToken.isDefined =>
       implicit val ec = ExecutionContext.global
-      val slackClientConfig = slackapi.Config(personalToken = personalToken)
+      val slackClientConfig = slackapi.Config(personalToken = appConfig.personalToken.get)
       val slackClient = Client.withConfig(slackClientConfig)
 
-      val queue = new LinkedBlockingQueue[Event]
+      val slackEventQueue = new LinkedBlockingQueue[Event]
 
-      val snoozeWatcher = new SnoozeWatcher(queue, slackClient)
-      val snoozeNotifications = new SnoozeNotifications(queue, MacOsNotification)
+      val snoozeWatcher = new SnoozeWatcher(slackEventQueue, slackClient)
+      val snoozeNotifications = new SnoozeNotifications(slackEventQueue, MacOsNotification, slackClient, appConfig)
 
       new Thread(snoozeWatcher, "snooze-watcher").start()
       new Thread(snoozeNotifications, "snooze-notifications").start()
 
-    case Right(AppConfig(None)) =>
+    case Right(appConfig) if appConfig.personalToken.isEmpty =>
       Console.err.println(s"Personal token required. Add ${AppConfig.CONFIG_PATH}")
       System.exit(2)
   }

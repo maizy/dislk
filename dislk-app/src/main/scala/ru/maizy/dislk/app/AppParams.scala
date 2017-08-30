@@ -11,10 +11,22 @@ import pushka.PushkaException
  * See LICENSE.txt for details.
  */
 
+@pushka
+case class AutosetStatus(
+    @key("text") text: String = AutosetStatus.DEFAULT_STATUS_TEXT,
+    @key("emoji") emoji: String = ":zzz:"
+)
+
+object AutosetStatus {
+  final val DEFAULT_STATUS_TEXT = "In DND mode until %1$tH:%1$tM"
+}
+
 // TODO: settings UI & system settings storage
-@pushka @forceObject
+@pushka
 case class AppConfig(
-    @key("personal_token") personalToken: Option[String] = None
+    @key("personal_token") personalToken: Option[String] = None,
+    @key("autoset_status") autoSetStatus: Option[AutosetStatus] = None,
+    @key("slack_app") slackApp: String = "/Applications/Slack.app"
 )
 
 object AppConfig {

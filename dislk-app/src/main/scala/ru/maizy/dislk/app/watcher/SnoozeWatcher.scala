@@ -5,6 +5,7 @@ package ru.maizy.dislk.app.watcher
  * See LICENSE.txt for details.
  */
 
+import java.time.ZonedDateTime
 import java.util.concurrent.{ BlockingQueue, Executors, TimeUnit }
 import scala.collection.mutable
 import scala.concurrent.{ ExecutionContext, Future }
@@ -15,12 +16,18 @@ class SnoozeWatcher(val queue: BlockingQueue[Event], slackClient: Client)(implic
   extends Runnable {
 
   private var snoozed = false
+  private var mayBeLastEndTime: Option[ZonedDateTime] = None
   private val timeout: Duration = 3.seconds
   private val scheduler = Executors.newScheduledThreadPool(1)
 
   override def run(): Unit = {
     slackClient.dndInfo() map { initInfo =>
       snoozed = initInfo.snoozeEnabled
+      if (initInfo.snoozeEnabled) {
+        initInfo.snoozeEndtime.foreach(ends => queue.add(SnoozeActivatedOnStartUp(ends)))
+      } else {
+        queue.add(SnoozeDeactivatedOnStartUp)
+      }
 
       def reschedule(): Unit = {
         scheduler.schedule(
@@ -55,10 +62,20 @@ class SnoozeWatcher(val queue: BlockingQueue[Event], slackClient: Client)(implic
   private def check()(implicit ec: ExecutionContext): Future[Seq[Event]] = {
     slackClient.dndInfo().map { dndInfo =>
       val events = mutable.ListBuffer.empty[Event]
-      if (!snoozed && dndInfo.snoozeEnabled) {
-        snoozed = true
+      if (dndInfo.snoozeEnabled) {
         dndInfo.snoozeEndtime match {
-          case Some(ends) => events += SnoozeBegin(ends)
+          case Some(ends) =>
+            if (!snoozed) {
+              snoozed = true
+              mayBeLastEndTime = Some(ends)
+              events += SnoozeBegin(ends)
+            } else {
+              mayBeLastEndTime foreach { lastEndTime =>
+                if (!lastEndTime.equals(ends)) {
+                  events += SnoozeEndtimeChanged(ends)
+                }
+              }
+            }
           // TODO: typesafe.logging
           case _ => Console.err.println("Snooze endtime unknown, skip")
         }

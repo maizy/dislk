@@ -17,7 +17,7 @@ sbt dislkApp/jdkPackager:packageBin
 ```
 
 App will be in `dislk-app/target/universal/jdkpackager/bundles/dislk.app`.
-Finall app contains embedded JRE.
+Final app contains embedded JRE.
 
 
 ## Setup
@@ -28,7 +28,11 @@ Add ~/.config/dislk.json:
 
 ```
 {
-    "personal_token": "abcd-1234-5678-901234-1234abcdef"
+    "personal_token": "abcd-1234-5678-901234-1234abcdef",
+    "autoset_status": {
+        "text": "In DND mode until %1$tH:%1$tM",
+        "emoji": ":zzz:"
+    }
 }
 ```
 

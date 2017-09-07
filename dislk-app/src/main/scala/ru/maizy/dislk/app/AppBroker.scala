@@ -9,14 +9,16 @@ import java.time.ZonedDateTime
 import java.util.{ Date, IllegalFormatConversionException }
 import java.util.concurrent.BlockingQueue
 import scala.sys.process._
+import ru.maizy.dislk.app.ui.{ SetDnd, UIEvent, UnsetDnd }
 import ru.maizy.dislk.app.watcher.{ Event, SnoozeActivatedOnStartUp, SnoozeBegin, SnoozeDeactivatedOnStartUp }
-import ru.maizy.dislk.app.watcher.SnoozeFinish
+import ru.maizy.dislk.app.watcher.{ SnoozeEndtimeChanged, SnoozeFinish }
 import ru.maizy.dislk.macos.notification.MacOsNotification
 import ru.maizy.dislk.slackapi
 
 
-class SnoozeNotifications(
+class AppBroker(
     slackEventQueue: BlockingQueue[Event],
+    uiEventQueue: BlockingQueue[UIEvent],
     osxNotifier: MacOsNotification.type,
     slackClient: slackapi.Client,
     appConfig: AppConfig
@@ -29,7 +31,7 @@ class SnoozeNotifications(
         String.format(autoSetConfig.text, endDate)
         // TODO: warn log
       } catch {
-        case e: IllegalFormatConversionException =>
+        case _: IllegalFormatConversionException =>
           String.format(AutosetStatus.DEFAULT_STATUS_TEXT, endDate)
       }
       slackClient.setStatus(text, autoSetConfig.emoji)
@@ -53,21 +55,27 @@ class SnoozeNotifications(
           case SnoozeBegin(ends) =>
             osxNotifier.notify("snooze started", "close Slack.app and work")
             setSlackStatus(ends)
+            uiEventQueue.put(SetDnd(ends))
 
           case SnoozeFinish =>
             osxNotifier.notify("snooze ended", "time to read Slack")
             unsetSlackStatus()
-            // TODO: config
-            s"open ${appConfig.slackApp}".!
+            Seq("open", appConfig.slackApp).!!
+            uiEventQueue.put(UnsetDnd)
 
           case SnoozeActivatedOnStartUp(ends) =>
             setSlackStatus(ends)
+            uiEventQueue.put(SetDnd(ends))
+
+          case SnoozeEndtimeChanged(newEnds) =>
+            setSlackStatus(newEnds)
+            uiEventQueue.put(SetDnd(newEnds))
 
           case SnoozeDeactivatedOnStartUp =>
             unsetSlackStatus()
+            uiEventQueue.put(UnsetDnd)
 
-          case _ =>
-
+          case _ => // TODO: log unknown events
         }
       } catch {
         case _: InterruptedException =>

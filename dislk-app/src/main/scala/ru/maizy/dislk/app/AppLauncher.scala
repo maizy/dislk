@@ -17,30 +17,42 @@ object AppLauncher extends App {
   if (!System.getProperty("os.name").toLowerCase.startsWith("mac os x")) {
     throw new Exception("only macOS supported for now")
   }
-//   val ui = new UIDispatcher
-//   ui.initUi()
+
+  implicit val ec = ExecutionContext.global
+
+  val uiEventQueue = new LinkedBlockingQueue[ui.UIEvent]
+  val uiDispatcher = new ui.UIDispatcher(uiEventQueue)
+  uiDispatcher.start()
 
   AppConfig.loadConfig() match {
     case Left(error) =>
       Console.err.println(error)
-      System.exit(1)
+      uiEventQueue.put(ui.CriticalError(s"Config load error: $error"))
 
     case Right(appConfig) if appConfig.personalToken.isDefined =>
-      implicit val ec = ExecutionContext.global
+      uiEventQueue.put(ui.Init)
+
       val slackClientConfig = slackapi.Config(personalToken = appConfig.personalToken.get)
       val slackClient = Client.withConfig(slackClientConfig)
-
       val slackEventQueue = new LinkedBlockingQueue[Event]
 
       val snoozeWatcher = new SnoozeWatcher(slackEventQueue, slackClient)
-      val snoozeNotifications = new SnoozeNotifications(slackEventQueue, MacOsNotification, slackClient, appConfig)
-
       new Thread(snoozeWatcher, "snooze-watcher").start()
-      new Thread(snoozeNotifications, "snooze-notifications").start()
+
+      val broker = new AppBroker(
+        slackEventQueue,
+        uiEventQueue,
+        MacOsNotification,
+        slackClient,
+        appConfig
+      )
+      new Thread(broker, "broker").start()
 
     case Right(appConfig) if appConfig.personalToken.isEmpty =>
-      Console.err.println(s"Personal token required. Add ${AppConfig.CONFIG_PATH}")
-      System.exit(2)
+      uiEventQueue.put(ui.CriticalError(
+        s"Personal token required. Add json config to ${AppConfig.CONFIG_PATH}\n" +
+        " (see https://github.com/maizy/dislk#setup for details)"
+      ))
   }
 
 }

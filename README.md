@@ -2,6 +2,9 @@
 
 _TBA_
 
+## Download
+
+* [latest dislk.app for macOS](https://github.com/maizy/dislk/releases/download/0.0.2/dislk.zip)
 
 ## Requirements
 

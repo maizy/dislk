@@ -3,7 +3,7 @@ organization := "ru.maizy"
 
 val scalaV = "2.12.2"
 val maintainerS = "Nikita Kovaliov <nikita@maizy.ru>"
-val dislkVersion = "0.0.1-alpha"
+val dislkVersion = "0.0.2"
 
 val scalacOpts = Seq(
   "-target:jvm-1.8",

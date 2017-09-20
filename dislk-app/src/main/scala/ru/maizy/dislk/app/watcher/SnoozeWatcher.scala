@@ -10,10 +10,13 @@ import java.util.concurrent.{ BlockingQueue, Executors, TimeUnit }
 import scala.collection.mutable
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.{ Duration, DurationInt }
+import com.typesafe.scalalogging.LazyLogging
 import ru.maizy.dislk.slackapi.Client
 
 class SnoozeWatcher(val queue: BlockingQueue[Event], slackClient: Client)(implicit ec: ExecutionContext)
-  extends Runnable {
+  extends Runnable
+  with LazyLogging
+{
 
   private var lastSnoozed = false
   private var mayBeLastEndTime: Option[ZonedDateTime] = None
@@ -36,7 +39,7 @@ class SnoozeWatcher(val queue: BlockingQueue[Event], slackClient: Client)(implic
         scheduler.schedule(
           new Runnable {
             override def run(): Unit = {
-              Console.err.println("check snooze status in slack")
+              logger.debug("check snooze status in slack")
               check()
                 .map { events =>
                   if (events.nonEmpty) {
@@ -45,7 +48,7 @@ class SnoozeWatcher(val queue: BlockingQueue[Event], slackClient: Client)(implic
                   reschedule()
                 }
                 .failed.foreach { e =>
-                  Console.err.println(s"Error on updating snooze status: $e")
+                  logger.warn(s"Error on updating snooze status: $e")
                   reschedule()
                 }
               ()
@@ -64,6 +67,7 @@ class SnoozeWatcher(val queue: BlockingQueue[Event], slackClient: Client)(implic
 
   private def check()(implicit ec: ExecutionContext): Future[Seq[Event]] = {
     slackClient.dndInfo().map { dndInfo =>
+      logger.debug(s"DND info: $dndInfo")
       val events = mutable.ListBuffer.empty[Event]
       if (dndInfo.snoozeEnabled) {
         dndInfo.snoozeEndtime match {
@@ -80,8 +84,7 @@ class SnoozeWatcher(val queue: BlockingQueue[Event], slackClient: Client)(implic
                 }
               }
             }
-          // TODO: typesafe.logging
-          case _ => Console.err.println("Snooze endtime unknown, skip")
+          case _ => logger.warn("Snooze endtime unknown, skip")
         }
       } else if(lastSnoozed && !dndInfo.snoozeEnabled) {
         lastSnoozed = false

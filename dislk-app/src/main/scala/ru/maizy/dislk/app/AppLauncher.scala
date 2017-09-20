@@ -7,17 +7,19 @@ package ru.maizy.dislk.app
 
 import java.util.concurrent.LinkedBlockingQueue
 import scala.concurrent.ExecutionContext
+import com.typesafe.scalalogging.LazyLogging
 import ru.maizy.dislk.app.watcher.{ Event, SnoozeWatcher }
 import ru.maizy.dislk.macos.notification.MacOsNotification
 import ru.maizy.dislk.slackapi
 import ru.maizy.dislk.slackapi.Client
 
-object AppLauncher extends App {
+object AppLauncher extends App with LazyLogging {
 
   if (!System.getProperty("os.name").toLowerCase.startsWith("mac os x")) {
     throw new Exception("only macOS supported for now")
   }
 
+  logger.info("Launch app")
   implicit val ec = ExecutionContext.global
 
   val uiEventQueue = new LinkedBlockingQueue[ui.UIEvent]
@@ -26,8 +28,9 @@ object AppLauncher extends App {
 
   AppConfig.loadConfig() match {
     case Left(error) =>
-      Console.err.println(error)
-      uiEventQueue.put(ui.CriticalError(s"Config load error: $error"))
+      val errorMsg = s"Config load error: $error"
+      logger.error(errorMsg)
+      uiEventQueue.put(ui.CriticalError(error))
 
     case Right(appConfig) if appConfig.personalToken.isDefined =>
       uiEventQueue.put(ui.Init)
@@ -49,6 +52,7 @@ object AppLauncher extends App {
       new Thread(broker, "broker").start()
 
     case Right(appConfig) if appConfig.personalToken.isEmpty =>
+      logger.error("Personal token required")
       uiEventQueue.put(ui.CriticalError(
         s"Personal token required. Add json config to ${AppConfig.CONFIG_PATH}\n" +
         " (see https://github.com/maizy/dislk#setup for details)"

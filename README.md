@@ -44,6 +44,11 @@ In Intelij IDEA you should manually add
 [macro paradise compiler plugin](https://search.maven.org/remotecontent?filepath=org/scalamacros/paradise_2.12.2/2.1.0/paradise_2.12.2-2.1.0.jar)
 to `Prefereces` -> `Scala Compiler` -> `slackClient`/`dislckApp` -> `Compiler plugins`.
 
+Run:
+
+```
+sbt -Dlogback.configurationFile=dislk-app/dev/logback.dev.xml dislkApp/run
+```
 
 ## License
 
